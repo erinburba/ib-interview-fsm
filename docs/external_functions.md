@@ -1,4 +1,4 @@
 # External Functions
-A brief description of external functions called by my program.
+Documentation of the pseudocode functions used in my program. Noting their names, signatures, occurrences, and the functions they represent.
 
 ...
