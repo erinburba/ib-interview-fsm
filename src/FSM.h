@@ -1,12 +1,24 @@
+#include <stdbool.h>
 
+/******  VARIABLES  ******/
+
+// Boolean that's true when the device is in silent mode.
+// Toggled through interrupt handling (or at least the idea thereof).
+bool isSilent;
 
 /******  CONSTANTS  ******/
 
-// Threshold temperature to define overheating.
-#define MAX_TEMP 100
+// Threshold Celsius temperature to define overheating.
+#define MAX_TEMP 80
 
-// Unit-less value of what the output should be at standard operation.
-#define NORMAL_OUTPUT 100
+// Unit-less 0-100 output level that results in no output.
+#define NO_OUTPUT 0
+
+// Unit-less 0-100 output level value for reduced/silent operation.
+#define REDUCED_OUTPUT 40
+
+// Cycle period in seconds
+#define PERIOD_S 1
 
 /******  TYPEDEFS  ******/
 
@@ -22,9 +34,24 @@ typedef enum {
     STATE_NO_COVER
 } DeviceState;
 
+// Function pointer defining state execution functions.
+typedef DeviceState(*StateFunc)(DeviceState);
+
 /******  FUNCTION DECLARATIONS  ******/
 
 /***  PSEUDOCODE PLACEHOLDERS  ***/
+
+/**  INTERRUPT HANDLING FUNCTION  **/
+
+/**
+ * int -> None
+ * 
+ * Pseudocode/placeholder.
+ * Interrupt handling function to toggle between silent
+ * and normal operation in response to a button press.
+ */
+void HandleSilentModeButtonPress(int irq);
+
 
 /**  INPUT/SENSING FUNCTIONS  **/
 
@@ -41,9 +68,9 @@ int GetUserInput();
  * None -> float
  * 
  * Pseudocode/placeholder.
- * Return the temperature reading from a sensor.
+ * Return the Celsius temperature reading from a sensor.
  */
-float GetTemp();
+float GetTemperatureC();
 
 /**
  * None -> bool
@@ -52,14 +79,6 @@ float GetTemp();
  * Return true if the device's cover is present; false otherwise.
  */
 bool IsCoverPresent();
-
-/**
- * None -> bool
- * 
- * Pseudocode/placeholder.
- * Return true if the device is set to silent mode; false otherwise.
- */
-bool IsSilentMode();
 
 
 /**  CONTROL FUNCTIONS  **/
@@ -90,20 +109,13 @@ void FansOn();
 void SetOutput(int val);
 
 /**
- * None -> None
- * 
- * Pseudocode/placeholder.
- * Disable the device's outputs.
- */
-void DisableOutput();
-
-/**
- * None -> None
+ * None -> bool
+ * Return true if the initialization succeeds, false if it fails.
  * 
  * Pseudocode/placeholder.
  * Initialize the main logic board.
  */
-void MainBoardInit();
+bool MainBoardInit();
 
 /**
  * None -> None
@@ -117,62 +129,75 @@ void OutputsInit();
 /***  STATE HANDLER FUNCTIONS  ***/
 
 /**
- * None -> None
+ * None -> DeviceState
+ * previousState (DeviceState): ignored (included for consistant function signatures)
+ * Return the device's next state.
  * 
  * Power-On Reset state
  */
-void StatePORHandler();
+DeviceState StatePORHandler(DeviceState previousState);
 
 /**
- * None -> None
+ * DeviceState -> DeviceState
+ * previousState (DeviceState): ignored (included for consistant function signatures)
+ * Return the device's next state.
  * 
  * Main logic board initialization state
  */
-void StateInitMainHandler();
+DeviceState StateInitMainHandler(DeviceState previousState);
 
 /**
- * None -> None
+ * DeviceState -> DeviceState
+ * previousState (DeviceState): ignored (included for consistant function signatures)
+ * Return the device's next state.
  * 
  * Halted (failed boot) state
  */
-void StateHaltHandler();
+DeviceState StateHaltHandler(DeviceState previousState);
 
 /**
- * DeviceState -> None
- * overrideState (DeviceState): if non-null, the following state of the device.
+ * DeviceState -> DeviceState
+ * previousState (DeviceState): if non-null, the following state of the device.
+ * Return the device's next state.
  * 
  * Board booted, initializing outputs state
  */
-void StateInitHandler(DeviceState overrideState); //TODO: remove overrideState if it doesn't fit the clarified specs.
+DeviceState StateInitHandler(DeviceState previousState);
 
 /**
- * None -> None
+ * DeviceState -> DeviceState
+ * previousState (DeviceState): ignored (included for consistant function signatures)
+ * Return the device's next state.
  * 
  * Normal operation state: check sensors and user inputs, adjust outputs
  */
-void StateNormalHandler();
+DeviceState StateNormalHandler(DeviceState previousState);
 
 /**
- * None -> None
+ * DeviceState -> DeviceState
+ * previousState (DeviceState): ignored (included for consistant function signatures)
+ * Return the device's next state.
  * 
  * Adjusted state: disable fans, scale back outputs
  */
-void StateSilentHandler();
+DeviceState StateSilentHandler(DeviceState previousState);
 
 /**
- * DeviceState -> None
+ * DeviceState -> DeviceState
  * previousState (DeviceState): the device's previous state, to which it will 
  *                              return after the temperature regulates.
+ * Return the device's next state.
  * 
  * Error state: reduce outputs and stay in the state until the temperature regulates.
  */
-void StateOverTempHandler(DeviceState previousState);
+DeviceState StateOverTempHandler(DeviceState previousState);
 
 /**
- * DeviceState -> None
+ * DeviceState -> DeviceState
  * previousState (DeviceState): the device's previous state, to which it will 
  *                              return after the cover is replaced.
+ * Return the device's next state.
  * 
  * Error state: disable outputs and stay in this state until the cover is replaced.
  */
-void StateNoCoverHandler(DeviceState previousState);
+DeviceState StateNoCoverHandler(DeviceState previousState);
