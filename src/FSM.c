@@ -259,7 +259,7 @@ int main(int argc, char *argv[])
 {
     // Start the devivce in normal (non-silent) operation.
     isSilent = false;
-    DeviceState nextState, previousState, currentState;
+    DeviceState nextState, previousState, currentState = STATE_POR;
 
     while (1) {
 
