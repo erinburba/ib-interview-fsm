@@ -1,15 +1,14 @@
-#include <stdbool.h>
+/**
+ * Erin Burba
+ * Impact Biosystems: Firmware Interview
+ * FSM.h
+ * 
+ * Header file for my implementation of the Finite State Machine
+ * described here: https://www.notion.so/Finite-State-Machine-3b9a2982f4344f1c997372f579a02bd7
+ */
 
-/******  VARIABLES  ******/
 
-// Boolean that's true when the device is in silent mode.
-// Toggled through interrupt handling (or at least the idea thereof).
-bool isSilent;
-
-/******  CONSTANTS  ******/
-
-// Threshold Celsius temperature to define overheating.
-#define MAX_TEMP 80
+/* ################  CONSTANTS  ################ */
 
 // Unit-less 0-100 output level that results in no output.
 #define NO_OUTPUT 0
@@ -17,10 +16,10 @@ bool isSilent;
 // Unit-less 0-100 output level value for reduced/silent operation.
 #define REDUCED_OUTPUT 40
 
-// Cycle period in seconds
-#define PERIOD_S 1
+// Number of distinct state transitions.
+# define N_STATE_TRANSITIONS 18
 
-/******  TYPEDEFS  ******/
+/* ################  TYPEDEFS  ################ */
 
 // Different states of the device
 typedef enum {
@@ -34,54 +33,35 @@ typedef enum {
     STATE_NO_COVER
 } DeviceState;
 
-// Function pointer defining state execution functions.
-typedef DeviceState(*StateFunc)(DeviceState);
+// Different events that occur on the device
+typedef enum {
+    EVENT_POR_DONE,
+    EVENT_BOARD_BOOT_RETRY,
+    EVENT_BOARD_BOOT_FAIL,
+    EVENT_BOARD_BOOT_SUCCESS,
+    EVENT_BOOT_SUCCESS,
+    EVENT_SILENT_BUTTON,
+    EVENT_TEMPERATURE_HIGH,
+    EVENT_TEMPERATURE_NORMAL,
+    EVENT_COVER_OFF,
+    EVENT_COVER_ON,
+    EVENT_USER_INPUT // wouldn't cause a state change, but would require an update in normal operation
+} DeviceEvent;
 
-/******  FUNCTION DECLARATIONS  ******/
+// Function pointer defining state transition functions.
+typedef DeviceState (*EventHandler) (DeviceState);
 
-/***  PSEUDOCODE PLACEHOLDERS  ***/
+// Struct unifying a device state with an event it should
+// respond to, and the function to handle that response.
+typedef struct {
+    DeviceState state;
+    DeviceEvent event;
+    EventHandler handler;
+} StateMachine;
 
-/**  INTERRUPT HANDLING FUNCTION  **/
+/* ################  FUNCTION DECLARATIONS  ################ */
 
-/**
- * int -> None
- * 
- * Pseudocode/placeholder.
- * Interrupt handling function to toggle between silent
- * and normal operation in response to a button press.
- */
-void HandleSilentModeButtonPress(int irq);
-
-
-/**  INPUT/SENSING FUNCTIONS  **/
-
-/**
- * None -> int
- * 
- * Pseudocode/placeholder.
- * Retrieve the user's input.
- * Return an int (example reading).
- */
-int GetUserInput();
-
-/**
- * None -> float
- * 
- * Pseudocode/placeholder.
- * Return the Celsius temperature reading from a sensor.
- */
-float GetTemperatureC();
-
-/**
- * None -> bool
- * 
- * Pseudocode/placeholder.
- * Return true if the device's cover is present; false otherwise.
- */
-bool IsCoverPresent();
-
-
-/**  CONTROL FUNCTIONS  **/
+/************  PSEUDOCODE PLACEHOLDERS  ************/
 
 /**
  * None -> None
@@ -109,13 +89,12 @@ void FansOn();
 void SetOutput(int val);
 
 /**
- * None -> bool
- * Return true if the initialization succeeds, false if it fails.
+ * None -> None
  * 
  * Pseudocode/placeholder.
  * Initialize the main logic board.
  */
-bool MainBoardInit();
+void MainBoardInit();
 
 /**
  * None -> None
@@ -126,78 +105,22 @@ bool MainBoardInit();
 void OutputsInit();
 
 
-/***  STATE HANDLER FUNCTIONS  ***/
+/************  STATE HANDLER FUNCTIONS  ************/
 
-/**
- * None -> DeviceState
- * previousState (DeviceState): ignored (included for consistant function signatures)
- * Return the device's next state.
- * 
- * Power-On Reset state
- */
 DeviceState StatePORHandler(DeviceState previousState);
 
-/**
- * DeviceState -> DeviceState
- * previousState (DeviceState): ignored (included for consistant function signatures)
- * Return the device's next state.
- * 
- * Main logic board initialization state
- */
 DeviceState StateInitMainHandler(DeviceState previousState);
 
-/**
- * DeviceState -> DeviceState
- * previousState (DeviceState): ignored (included for consistant function signatures)
- * Return the device's next state.
- * 
- * Halted (failed boot) state
- */
 DeviceState StateHaltHandler(DeviceState previousState);
 
-/**
- * DeviceState -> DeviceState
- * previousState (DeviceState): if non-null, the following state of the device.
- * Return the device's next state.
- * 
- * Board booted, initializing outputs state
- */
 DeviceState StateInitHandler(DeviceState previousState);
 
-/**
- * DeviceState -> DeviceState
- * previousState (DeviceState): ignored (included for consistant function signatures)
- * Return the device's next state.
- * 
- * Normal operation state: check sensors and user inputs, adjust outputs
- */
 DeviceState StateNormalHandler(DeviceState previousState);
 
-/**
- * DeviceState -> DeviceState
- * previousState (DeviceState): ignored (included for consistant function signatures)
- * Return the device's next state.
- * 
- * Adjusted state: disable fans, scale back outputs
- */
 DeviceState StateSilentHandler(DeviceState previousState);
 
-/**
- * DeviceState -> DeviceState
- * previousState (DeviceState): the device's previous state, to which it will 
- *                              return after the temperature regulates.
- * Return the device's next state.
- * 
- * Error state: reduce outputs and stay in the state until the temperature regulates.
- */
 DeviceState StateOverTempHandler(DeviceState previousState);
 
-/**
- * DeviceState -> DeviceState
- * previousState (DeviceState): the device's previous state, to which it will 
- *                              return after the cover is replaced.
- * Return the device's next state.
- * 
- * Error state: disable outputs and stay in this state until the cover is replaced.
- */
 DeviceState StateNoCoverHandler(DeviceState previousState);
+
+DeviceState StateNormalTempHandler(DeviceState previousState);
