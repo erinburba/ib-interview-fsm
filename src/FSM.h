@@ -104,6 +104,24 @@ void MainBoardInit();
  */
 void OutputsInit();
 
+/**
+ * None -> DeviceEvent
+ * Return the identifier of an event when one occurs.
+ * 
+ * Pseudocode/placeholder.
+ * Wait for an event to happen on the device, and return that event's identifier.
+ */
+DeviceEvent GetEvent();
+
+/**
+ * None -> int
+ * Return the user's input value.
+ * 
+ * Pseudocode/placeholder.
+ * Read a value from the user's input (sensor, setting, etc). Returned value is used
+ * to set the device's output in standard operation mode.
+ */
+int GetUserInput();
 
 /************  STATE HANDLER FUNCTIONS  ************/
 

@@ -196,7 +196,7 @@ int main(int argc, char *argv[]) {
 
     while (1) {
         // Wait for an event to happen on the device.
-        DeviceEvent event = interrupt_event();
+        DeviceEvent event = GetEvent();
 
         // If the event causes a transition from the current state,
         // call the handler to get the next state.
