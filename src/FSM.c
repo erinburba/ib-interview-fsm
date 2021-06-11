@@ -181,7 +181,8 @@ FSM = {
     {STATE_SILENT, EVENT_SILENT_BUTTON, StateNormalHandler},
     {STATE_OVER_TEMP, EVENT_COVER_OFF, StateNoCoverHandler},
     {STATE_OVER_TEMP, EVENT_TEMPERATURE_NORMAL, StateNormalTempHandler},
-    {STATE_NO_COVER, EVENT_COVER_ON, StateInitHandler}
+    {STATE_NO_COVER, EVENT_COVER_ON, StateInitHandler},
+    {STATE_NORMAL, EVENT_NOISY_BUTTON, StateSilentHandler}
 };
 
 /**

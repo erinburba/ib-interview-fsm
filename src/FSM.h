@@ -30,7 +30,8 @@ typedef enum {
     STATE_NORMAL,
     STATE_SILENT,
     STATE_OVER_TEMP,
-    STATE_NO_COVER
+    STATE_NO_COVER,
+    STATE_NOISY
 } DeviceState;
 
 // Different events that occur on the device
@@ -45,7 +46,8 @@ typedef enum {
     EVENT_TEMPERATURE_NORMAL,
     EVENT_COVER_OFF,
     EVENT_COVER_ON,
-    EVENT_USER_INPUT // wouldn't cause a state change, but would require an update in normal operation
+    EVENT_USER_INPUT, // wouldn't cause a state change, but would require an update in normal operation
+    EVENT_NOISY_BUTTON
 } DeviceEvent;
 
 // Function pointer defining state transition functions.
